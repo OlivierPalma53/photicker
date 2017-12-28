@@ -3,6 +3,7 @@ package com.olivierpalma.photicker.views;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -89,6 +90,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mImageSelected = image;
                 
                 toogleControlPanel(true);
+
+                image.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                        float x, y;
+
+                        switch (motionEvent.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                mImageSelected = image;
+                                toogleControlPanel(true);
+                                break;
+                            case MotionEvent.ACTION_MOVE:
+                                int coords[] = {0,0};
+                                relativeLayout.getLocationOnScreen(coords);
+                                x = (motionEvent.getRawX() - (image.getWidth() /2));
+                                y = motionEvent.getRawY() - ((coords[1] + 100) + (image.getHeight()/2));
+
+                                image.setX(x);
+                                image.setY(y);
+                                break;
+                            case MotionEvent.ACTION_UP:
+                                break;
+                        }
+
+
+                        return true;
+                    }
+                });
                 
             }
         };
@@ -125,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.image_remove:
                 this.mViewHolder.mRelativePhotoContent.removeView(this.mImageSelected);
+                this.toogleControlPanel(false);
                 break;
 
         }
