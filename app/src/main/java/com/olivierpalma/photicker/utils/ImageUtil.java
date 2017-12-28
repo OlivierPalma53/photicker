@@ -3,6 +3,8 @@ package com.olivierpalma.photicker.utils;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.olivierpalma.photicker.R;
 
@@ -131,4 +133,29 @@ public class ImageUtil {
         return BitmapFactory.decodeResource(res, resId, options);
     }
 
+    public static void handleZoomIn(ImageView mImageSelected) {
+        if (mImageSelected.getWidth() > 800)
+            return;
+        ViewGroup.LayoutParams params = mImageSelected.getLayoutParams();
+        params.width = (int) (mImageSelected.getWidth() + (mImageSelected.getWidth() * 0.1));
+        params.height = (int) (mImageSelected.getHeight() + (mImageSelected.getHeight() * 0.1));
+        mImageSelected.setLayoutParams(params);
+    }
+
+    public static void handleZoomOut(ImageView mImageSelected) {
+        if (mImageSelected.getWidth() < 50)
+            return;
+        ViewGroup.LayoutParams params = mImageSelected.getLayoutParams();
+        params.width = (int) (mImageSelected.getWidth() - (mImageSelected.getWidth() * 0.1));
+        params.height = (int) (mImageSelected.getHeight() - (mImageSelected.getHeight() * 0.1));
+        mImageSelected.setLayoutParams(params);
+    }
+
+    public static void handleZoomLeft(ImageView mImageSelected) {
+        mImageSelected.setRotation(mImageSelected.getRotation() - 5);
+    }
+
+    public static void handleZoomRight(ImageView mImageSelected) {
+        mImageSelected.setRotation(mImageSelected.getRotation() + 5);
+    }
 }
