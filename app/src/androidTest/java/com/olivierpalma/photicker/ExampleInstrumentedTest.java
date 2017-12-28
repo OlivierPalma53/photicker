@@ -1,4 +1,4 @@
-package com.devmasterteam.photicker;
+package com.olivierpalma.photicker;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

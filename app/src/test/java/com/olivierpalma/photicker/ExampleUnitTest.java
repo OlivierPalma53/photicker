@@ -1,4 +1,4 @@
-package com.devmasterteam.photicker;
+package com.olivierpalma.photicker;
 
 import org.junit.Test;
 

@@ -1,9 +1,9 @@
-package com.devmasterteam.photicker.views;
+package com.olivierpalma.photicker.views;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.devmasterteam.photicker.R;
+import com.olivierpalma.photicker.R;
 
 public class MainActivity extends AppCompatActivity {
 
