@@ -1,23 +1,35 @@
 package com.olivierpalma.photicker.views;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.olivierpalma.photicker.R;
 import com.olivierpalma.photicker.utils.ImageUtil;
 import com.olivierpalma.photicker.utils.LongEventeType;
+import com.olivierpalma.photicker.utils.PermissionUtil;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
 
+    private static final int REQUEST_TAKE_PHOTO = 2;
     private ViewHolder mViewHolder = new ViewHolder();
     private ImageView mImageSelected;
     private boolean mAutoIncrement;
@@ -59,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mLinearSharePanel = (LinearLayout) this.findViewById(R.id.linear_share_panel);
         this.mViewHolder.mLinearControlPanel = (LinearLayout) this.findViewById(R.id.linear_control_panel);
 
+        this.mViewHolder.mButtonTakePhoto = (ImageView) this.findViewById(R.id.image_take_photo);
+
         this.mViewHolder.mButtonZoomIn = (ImageView) this.findViewById(R.id.image_zoom_in);
         this.mViewHolder.mButtonZoomOut = (ImageView) this.findViewById(R.id.image_zoom_out);
         this.mViewHolder.mButtonRotateLeft = (ImageView) this.findViewById(R.id.image_rotate_left);
@@ -78,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mButtonRotateRight.setOnClickListener(this);
         this.mViewHolder.mButtonFinish.setOnClickListener(this);
         this.mViewHolder.mButtonRemove.setOnClickListener(this);
+        this.mViewHolder.mButtonTakePhoto.setOnClickListener(this);
 
         this.mViewHolder.mButtonZoomIn.setOnLongClickListener(this);
         this.mViewHolder.mButtonZoomOut.setOnLongClickListener(this);
@@ -153,6 +168,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
 
         switch (view.getId()) {
+            case R.id.image_take_photo:
+                if (!PermissionUtil.hasCameraPermission(this)){
+                    PermissionUtil.askCameraPermission(this);
+                }
+                break;
             case R.id.image_zoom_in:
                 ImageUtil.handleZoomIn(this.mImageSelected);
                 break;
@@ -175,6 +195,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PermissionUtil.CAMERA_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                dispatchTakePictureIntent();
+            } else {
+                new AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.without_permission_camera_explanation))
+                        .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        }).show();
+            }
+        }
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = ImageUtil.createPhotoFile(this);
+                this.mViewHolder.mUriPhotoPath = Uri.fromFile(photoFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Não foi possivel iniciar a camera", Toast.LENGTH_SHORT).show();
+            }
+
+            if (photoFile != null) {
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
+        }
     }
 
     @Override
@@ -211,10 +269,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ImageView mButtonRotateRight;
         ImageView mButtonFinish;
         ImageView mButtonRemove;
+        ImageView mButtonTakePhoto;
 
         LinearLayout mLinearSharePanel;
         LinearLayout mLinearControlPanel;
         RelativeLayout mRelativePhotoContent;
+        Uri mUriPhotoPath;
     }
 
     private class RtpUpdater implements Runnable {
