@@ -151,11 +151,11 @@ public class ImageUtil {
         mImageSelected.setLayoutParams(params);
     }
 
-    public static void handleZoomLeft(ImageView mImageSelected) {
+    public static void handleRotateLeft(ImageView mImageSelected) {
         mImageSelected.setRotation(mImageSelected.getRotation() - 5);
     }
 
-    public static void handleZoomRight(ImageView mImageSelected) {
+    public static void handleRotateRight(ImageView mImageSelected) {
         mImageSelected.setRotation(mImageSelected.getRotation() + 5);
     }
 }

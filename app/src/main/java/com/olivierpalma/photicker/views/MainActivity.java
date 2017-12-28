@@ -1,6 +1,7 @@
 package com.olivierpalma.photicker.views;
 
 import android.graphics.BitmapFactory;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -11,13 +12,17 @@ import android.widget.RelativeLayout;
 
 import com.olivierpalma.photicker.R;
 import com.olivierpalma.photicker.utils.ImageUtil;
+import com.olivierpalma.photicker.utils.LongEventeType;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
 
     private ViewHolder mViewHolder = new ViewHolder();
     private ImageView mImageSelected;
+    private boolean mAutoIncrement;
+    private LongEventeType mLongEventType;
+    private Handler mRepeatUpdateHandle = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +78,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mButtonRotateRight.setOnClickListener(this);
         this.mViewHolder.mButtonFinish.setOnClickListener(this);
         this.mViewHolder.mButtonRemove.setOnClickListener(this);
+
+        this.mViewHolder.mButtonZoomIn.setOnLongClickListener(this);
+        this.mViewHolder.mButtonZoomOut.setOnLongClickListener(this);
+        this.mViewHolder.mButtonRotateLeft.setOnLongClickListener(this);
+        this.mViewHolder.mButtonRotateRight.setOnLongClickListener(this);
+
+        this.mViewHolder.mButtonZoomIn.setOnTouchListener(this);
+        this.mViewHolder.mButtonZoomOut.setOnTouchListener(this);
+        this.mViewHolder.mButtonRotateLeft.setOnTouchListener(this);
+        this.mViewHolder.mButtonRotateRight.setOnTouchListener(this);
     }
 
     private View.OnClickListener onClickImageOption(final RelativeLayout relativeLayout, final Integer imageId, int width, int height) {
@@ -145,10 +160,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ImageUtil.handleZoomOut(this.mImageSelected);
                 break;
             case R.id.image_rotate_left:
-                ImageUtil.handleZoomLeft(this.mImageSelected);
+                ImageUtil.handleRotateLeft(this.mImageSelected);
                 break;
             case R.id.image_rotate_right:
-                ImageUtil.handleZoomRight(this.mImageSelected);
+                ImageUtil.handleRotateRight(this.mImageSelected);
                 break;
             case R.id.image_finish:
                 this.toogleControlPanel(false);
@@ -160,6 +175,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        if(view.getId() == R.id.image_zoom_in) this.mLongEventType = LongEventeType.ZoomIn;
+        if(view.getId() == R.id.image_zoom_out) this.mLongEventType = LongEventeType.ZoomOut;
+        if(view.getId() == R.id.image_rotate_left) this.mLongEventType = LongEventeType.RotateLeft;
+        if(view.getId() == R.id.image_rotate_right) this.mLongEventType = LongEventeType.RotateRight;
+        mAutoIncrement = true;
+        new RtpUpdater().run();
+        return false;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        int id = view.getId();
+
+        if (id == R.id.image_zoom_in || id == R.id.image_zoom_out || id == R.id.image_rotate_right || id == R.id.image_rotate_left) {
+
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP && mAutoIncrement) {
+                mAutoIncrement = false;
+                this.mLongEventType = null;
+            }
+
+        }
+        return false;
     }
 
     private static class ViewHolder {
@@ -174,5 +215,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         LinearLayout mLinearSharePanel;
         LinearLayout mLinearControlPanel;
         RelativeLayout mRelativePhotoContent;
+    }
+
+    private class RtpUpdater implements Runnable {
+        @Override
+        public void run() {
+            if (mAutoIncrement) {
+                mRepeatUpdateHandle.postDelayed(new RtpUpdater(), 50);
+            }
+
+            if (mLongEventType != null) {
+                switch (mLongEventType) {
+                    case ZoomIn:
+                        ImageUtil.handleZoomIn(mImageSelected);
+                        break;
+                    case ZoomOut:
+                        ImageUtil.handleZoomOut(mImageSelected);
+                        break;
+                    case RotateLeft:
+                        ImageUtil.handleRotateLeft(mImageSelected);
+                        break;
+                    case RotateRight:
+                        ImageUtil.handleRotateRight(mImageSelected);
+                        break;
+                }
+            }
+        }
     }
 }
