@@ -24,12 +24,13 @@ import com.olivierpalma.photicker.R;
 import com.olivierpalma.photicker.utils.ImageUtil;
 import com.olivierpalma.photicker.utils.LongEventeType;
 import com.olivierpalma.photicker.utils.PermissionUtil;
+import com.olivierpalma.photicker.utils.SocialUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
+public class Activity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
 
     private static final int REQUEST_TAKE_PHOTO = 2;
     private ViewHolder mViewHolder = new ViewHolder();
@@ -55,23 +56,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mRelativePhotoContent = (RelativeLayout) this.findViewById(R.id.relative_photo_content_draw);
         final LinearLayout content = (LinearLayout) this.findViewById(R.id.horizontal_content);
 
-        for (Integer imageId : mListImages) {
-            ImageView image = new ImageView(this);
-            image.setImageBitmap(ImageUtil.decodeSampledBitmapFromResource(getResources(), imageId, 70, 70));
-            image.setPadding(20, 10, 20, 10);
+        for (int i = 0; i < mListImages.size(); i++) {
 
+            // Obtém elemento de imagem
+            ImageView image = new ImageView(this);
+
+            // Substitui a imagem com a imagem sendo iterada
+            image.setImageBitmap(ImageUtil.decodeSampledBitmapFromResource(getResources(), mListImages.get(i), 70, 70));
+            image.setPadding(20,10,20,10);
+            //image.setLayoutParams(new LinearLayout.MarginLayoutParams(150, 150));
+
+            final int position = mListImages.get(i);
             BitmapFactory.Options dimensions = new BitmapFactory.Options();
             dimensions.inJustDecodeBounds = true;
 
-            BitmapFactory.decodeResource(getResources(), imageId, dimensions);
+            BitmapFactory.decodeResource(getResources(), mListImages.get(i), dimensions);
 
             final int width = dimensions.outWidth;
             final int height = dimensions.outHeight;
 
-            image.setOnClickListener(onClickImageOption(this.mViewHolder.mRelativePhotoContent, imageId, width, height));
+            image.setOnClickListener(onClickImageOption(this.mViewHolder.mRelativePhotoContent, position, width, height));
 
+            // Adiciona nova imagem
             content.addView(image);
         }
+
 
         this.mViewHolder.mLinearSharePanel = (LinearLayout) this.findViewById(R.id.linear_share_panel);
         this.mViewHolder.mLinearControlPanel = (LinearLayout) this.findViewById(R.id.linear_control_panel);
@@ -86,6 +95,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mButtonFinish = (ImageView) this.findViewById(R.id.image_finish);
         this.mViewHolder.mButtonRemove = (ImageView) this.findViewById(R.id.image_remove);
 
+        this.mViewHolder.mButtonInstagram = (ImageView) this.findViewById(R.id.image_instagram);
+        this.mViewHolder.mButtonFacebook = (ImageView) this.findViewById(R.id.image_facebook);
+        this.mViewHolder.mButtonTwitter = (ImageView) this.findViewById(R.id.image_twitter);
+        this.mViewHolder.mButtonWhatsapp = (ImageView) this.findViewById(R.id.image_whatsapp);
+
         this.setListeners();
 
 
@@ -99,6 +113,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mButtonFinish.setOnClickListener(this);
         this.mViewHolder.mButtonRemove.setOnClickListener(this);
         this.mViewHolder.mButtonTakePhoto.setOnClickListener(this);
+
+        this.mViewHolder.mButtonInstagram.setOnClickListener(this);
+        this.mViewHolder.mButtonFacebook.setOnClickListener(this);
+        this.mViewHolder.mButtonTwitter.setOnClickListener(this);
+        this.mViewHolder.mButtonWhatsapp.setOnClickListener(this);
 
         this.mViewHolder.mButtonZoomIn.setOnLongClickListener(this);
         this.mViewHolder.mButtonZoomOut.setOnLongClickListener(this);
@@ -115,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final ImageView image = new ImageView(MainActivity.this);
+                final ImageView image = new ImageView(Activity.this);
                 image.setImageResource(imageId);
                 relativeLayout.addView(image);
 
@@ -200,6 +219,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 this.mViewHolder.mRelativePhotoContent.removeView(this.mImageSelected);
                 this.toogleControlPanel(false);
                 break;
+
+            case R.id.image_instagram:
+                SocialUtil.ShareImageOnInsta(this, this.mViewHolder.mRelativePhotoContent, view);
+                break;
+            case R.id.image_facebook:
+                SocialUtil.ShareImageOnFacebook(this, this.mViewHolder.mRelativePhotoContent, view);
+                break;
+            case R.id.image_twitter:
+                SocialUtil.ShareImageOnTwitter(this, this.mViewHolder.mRelativePhotoContent, view);
+                break;
+            case R.id.image_whatsapp:
+                SocialUtil.ShareImageOnWhatsapp(this, this.mViewHolder.mRelativePhotoContent, view);
+                break;
+
 
         }
 
@@ -301,6 +334,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private static class ViewHolder {
+
+        ImageView mButtonInstagram;
+        ImageView mButtonFacebook;
+        ImageView mButtonTwitter;
+        ImageView mButtonWhatsapp;
 
         ImageView mButtonZoomIn;
         ImageView mButtonZoomOut;

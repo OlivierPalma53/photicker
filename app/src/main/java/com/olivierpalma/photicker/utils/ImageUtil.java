@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.olivierpalma.photicker.R;
 
@@ -100,6 +101,12 @@ public class ImageUtil {
         images.add(R.drawable.st_sticker_8);
         images.add(R.drawable.st_sticker_9);
         images.add(R.drawable.st_sticker_11);
+        images.add(R.drawable.st_objeto_2);
+        images.add(R.drawable.st_objeto_3);
+        images.add(R.drawable.st_objeto_4);
+        images.add(R.drawable.st_objeto_5);
+        images.add(R.drawable.st_objeto_6);
+
 
         return images;
     }
@@ -207,5 +214,10 @@ public class ImageUtil {
         img.recycle();
 
         return rotateImg;
+    }
+
+    public static Bitmap drawBitmap(RelativeLayout mRelativePhotoContent) {
+        mRelativePhotoContent.setDrawingCacheEnabled(true);
+        return mRelativePhotoContent.getDrawingCache();
     }
 }

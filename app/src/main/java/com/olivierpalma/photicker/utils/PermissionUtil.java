@@ -9,7 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 
 import com.olivierpalma.photicker.R;
-import com.olivierpalma.photicker.views.MainActivity;
+import com.olivierpalma.photicker.views.Activity;
 
 /**
  * Created by olivierpalma on 28/12/2017.
@@ -29,7 +29,7 @@ public class PermissionUtil {
         return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
     }
 
-    public static void askCameraPermission(final MainActivity mainActivity) {
+    public static void askCameraPermission(final Activity mainActivity) {
         if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.CAMERA)) {
             new AlertDialog.Builder(mainActivity)
             .setMessage(mainActivity.getString(R.string.permission_camera_explanation))
