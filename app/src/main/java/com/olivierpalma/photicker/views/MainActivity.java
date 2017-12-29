@@ -3,10 +3,12 @@ package com.olivierpalma.photicker.views;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -45,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+
         List<Integer> mListImages = ImageUtil.getImageList();
 
         this.mViewHolder.mRelativePhotoContent = (RelativeLayout) this.findViewById(R.id.relative_photo_content_draw);
@@ -72,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mViewHolder.mLinearControlPanel = (LinearLayout) this.findViewById(R.id.linear_control_panel);
 
         this.mViewHolder.mButtonTakePhoto = (ImageView) this.findViewById(R.id.image_take_photo);
+        this.mViewHolder.mImagePhoto = (ImageView) this.findViewById(R.id.image_photo);
 
         this.mViewHolder.mButtonZoomIn = (ImageView) this.findViewById(R.id.image_zoom_in);
         this.mViewHolder.mButtonZoomOut = (ImageView) this.findViewById(R.id.image_zoom_out);
@@ -171,6 +177,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.image_take_photo:
                 if (!PermissionUtil.hasCameraPermission(this)){
                     PermissionUtil.askCameraPermission(this);
+                } else {
+                    dispatchTakePictureIntent();
                 }
                 break;
             case R.id.image_zoom_in:
@@ -195,6 +203,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+            this.setPhotoAsBackground();
+        }
+    }
+
+    private void setPhotoAsBackground() {
+        int targetW = this.mViewHolder.mImagePhoto.getWidth();
+        int targetH = this.mViewHolder.mImagePhoto.getHeight();
+
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeFile(this.mViewHolder.mUriPhotoPath.getPath(), bmOptions);
+
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+
+        int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(this.mViewHolder.mUriPhotoPath.getPath(), bmOptions);
+
+        Bitmap bitmapRotate = ImageUtil.rotateImageIfRequired(bitmap, this.mViewHolder.mUriPhotoPath);
+
+        this.mViewHolder.mImagePhoto.setImageBitmap(bitmap);
     }
 
     @Override
@@ -270,6 +309,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ImageView mButtonFinish;
         ImageView mButtonRemove;
         ImageView mButtonTakePhoto;
+        ImageView mImagePhoto;
 
         LinearLayout mLinearSharePanel;
         LinearLayout mLinearControlPanel;
